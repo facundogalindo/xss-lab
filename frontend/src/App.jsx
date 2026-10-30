@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const API_BASE = 'http://127.0.0.1:3001';
+const DEMO_SCENARIOS = ['vulnerable', 'csp', 'secure'];
+const DEMO_STEP_MS = 7000;
 
 const SCENARIOS = {
   vulnerable: {
@@ -10,7 +12,7 @@ const SCENARIOS = {
     className: 'vulnerable',
     objective: 'Observar cómo una entrada reflejada sin codificación puede convertirse en HTML y ejecutar JavaScript.',
     protection: 'No hay una CSP restrictiva y el servidor inserta el mensaje directamente en el cuerpo HTML.',
-    expected: 'El ejemplo de diálogo puede abrir una alerta dentro del documento del laboratorio.',
+    expected: 'El diálogo abre una alerta; la prueba visual agrega un aviso dentro del documento del laboratorio.',
     csp: 'Este endpoint no envía una política CSP.',
   },
   csp: {
@@ -20,7 +22,7 @@ const SCENARIOS = {
     className: 'csp',
     objective: 'Mantener la reflexión insegura y observar cómo la política bloquea scripts en línea.',
     protection: 'CSP aplicada por cabecera HTTP. La entrada continúa dentro del HTML como marcado.',
-    expected: 'El navegador debe registrar una violación de script-src y bloquear la alerta.',
+    expected: 'El navegador registra una violación CSP y bloquea el script o manejador en línea.',
     csp: "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'",
   },
   secure: {
@@ -30,7 +32,7 @@ const SCENARIOS = {
     className: 'secure',
     objective: 'Mostrar el mismo mensaje como texto mediante codificación de salida y conservar CSP como defensa adicional.',
     protection: 'escape-html codifica caracteres especiales en contexto de texto; también se envía la misma CSP.',
-    expected: 'El texto <script> debe verse literalmente y no crear un elemento script ejecutable.',
+    expected: 'El marcado de prueba se ve como texto y no crea nodos activos.',
     csp: "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'",
   },
 };
@@ -40,7 +42,7 @@ const EXAMPLES = [
   { label: 'Prueba de diálogo', value: "<script>alert('XSS')</script>" },
   {
     label: 'Prueba visual',
-    value: `<img src=x onerror="document.body.style.backgroundColor='#fff3b0'; document.body.dataset.xss='ejecutado'">`,
+    value: `<img src=x onerror="document.body.style.backgroundColor='#fff3b0'; const aviso=document.createElement('p'); aviso.id='xss-proof'; aviso.textContent='INYECCIÓN XSS EJECUTADA'; aviso.style.cssText='padding:12px;color:#7a3d00;font-size:20px;font-weight:bold'; document.body.append(aviso); this.remove()">`,
   },
 ];
 
@@ -54,22 +56,61 @@ export default function App() {
   const [activeScenario, setActiveScenario] = useState('vulnerable');
   const [message, setMessage] = useState(EXAMPLES[0].value);
   const [runNumber, setRunNumber] = useState(0);
+  const [demoStep, setDemoStep] = useState(null);
   const scenario = SCENARIOS[activeScenario];
   const frameUrl = buildFrameUrl(scenario.endpoint, message);
 
+  useEffect(() => {
+    if (demoStep === null) return undefined;
+
+    const timer = window.setTimeout(() => {
+      const nextStep = demoStep + 1;
+      if (nextStep >= DEMO_SCENARIOS.length) {
+        setDemoStep(null);
+        return;
+      }
+
+      setDemoStep(nextStep);
+      setActiveScenario(DEMO_SCENARIOS[nextStep]);
+      setRunNumber((current) => current + 1);
+    }, DEMO_STEP_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [demoStep]);
+
   function runTest(event) {
     event.preventDefault();
+    setDemoStep(null);
     setRunNumber((current) => current + 1);
   }
 
   function selectScenario(id) {
+    setDemoStep(null);
     setActiveScenario(id);
     setRunNumber((current) => current + 1);
   }
 
+  function selectExample(value) {
+    setDemoStep(null);
+    setMessage(value);
+  }
+
   function restoreExample() {
+    setDemoStep(null);
     setMessage(EXAMPLES[0].value);
     setRunNumber((current) => current + 1);
+  }
+
+  function toggleGuidedDemo() {
+    if (demoStep !== null) {
+      setDemoStep(null);
+      return;
+    }
+
+    setMessage(EXAMPLES[2].value);
+    setActiveScenario(DEMO_SCENARIOS[0]);
+    setRunNumber((current) => current + 1);
+    setDemoStep(0);
   }
 
   return (
@@ -113,7 +154,10 @@ export default function App() {
               <p className="eyebrow">Escenario actual</p>
               <h2>{scenario.shortLabel}</h2>
             </div>
-            <span className={`status-pill ${scenario.className}`}>{activeScenario === 'vulnerable' ? 'Sin defensa' : activeScenario === 'csp' ? 'CSP aplicada' : 'Escape + CSP'}</span>
+            <div className="scenario-status">
+              {demoStep !== null && <span className="demo-progress" aria-live="polite">Demo guiada · {demoStep + 1} de 3</span>}
+              <span className={`status-pill ${scenario.className}`}>{activeScenario === 'vulnerable' ? 'Sin defensa' : activeScenario === 'csp' ? 'CSP aplicada' : 'Escape + CSP'}</span>
+            </div>
           </div>
           <div className="explanation-grid">
             <article>
@@ -144,7 +188,7 @@ export default function App() {
           <div className="examples-row">
             <span className="examples-label">Ejemplos</span>
             {EXAMPLES.map((example) => (
-              <button className="example-button" type="button" key={example.label} onClick={() => setMessage(example.value)}>
+              <button className="example-button" type="button" key={example.label} onClick={() => selectExample(example.value)}>
                 {example.label}
               </button>
             ))}
@@ -152,7 +196,12 @@ export default function App() {
           <div className="actions-row">
             <button className="primary-button" type="submit">Ejecutar prueba</button>
             <button className="secondary-button" type="button" onClick={restoreExample}>Restaurar ejemplo</button>
-            <span className="action-hint">Cada ejecución carga una solicitud GET nueva.</span>
+            <button className="demo-button" type="button" data-testid="guided-demo-button" onClick={toggleGuidedDemo}>
+              {demoStep === null ? 'Iniciar demostración guiada' : 'Detener demostración'}
+            </button>
+            <span className="action-hint">
+              {demoStep === null ? 'La demo recorre los tres escenarios con la misma prueba visual.' : 'La pantalla cambia cada 7 segundos; podés detenerla cuando quieras.'}
+            </span>
           </div>
         </form>
 
@@ -178,7 +227,7 @@ export default function App() {
           <div className="inspection-copy">
             <p className="eyebrow">Inspección técnica</p>
             <h2>Comprobá la respuesta en DevTools</h2>
-            <p>Abrí Network, seleccioná el documento <code>/lab/{scenario.endpoint}</code> y revisá Response Headers. En Console, buscá la violación de CSP al probar el diálogo en el segundo escenario.</p>
+            <p>Abrí Network, seleccioná el documento <code>/lab/{scenario.endpoint}</code> y revisá Response Headers. En Console, buscá la violación CSP al probar el diálogo o la demo visual.</p>
           </div>
           <dl className="request-details">
             <div><dt>URL solicitada</dt><dd><code>{frameUrl}</code></dd></div>

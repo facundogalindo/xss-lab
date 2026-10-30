@@ -8,7 +8,7 @@
 1. Instalar dependencias con `npm install`.
 2. Instalar Chromium si se van a mostrar las pruebas: `npx playwright install chromium`.
 3. Iniciar `npm run dev` y abrir `http://127.0.0.1:5173`.
-4. Abrir DevTools (F12), activar la pestaña **Network** y conservar los registros al cambiar de escenario. Tener también visible **Console**.
+4. Abrir DevTools (F12), activar **Network**, marcar **Preserve log** y tener visible **Console**.
 5. Confirmar que la demostración usa `127.0.0.1`; no exponer los puertos a una red.
 
 ## Secuencia sugerida
@@ -17,30 +17,28 @@
 
 Presentar el objetivo: un parámetro GET vuelve dentro de HTML y comparar una respuesta vulnerable, la mitigación CSP y la salida codificada. Aclarar que la vulnerabilidad de las dos primeras pestañas es intencional y local.
 
-### 0:45–2:15 · Escenario vulnerable
+### 0:45–2:15 · Iniciar la demostración automática
 
-1. En **Vulnerable**, elegir **Prueba de diálogo** y ejecutar.
-2. Aceptar el diálogo `XSS`. La alerta ocurre dentro del documento del iframe; no es una simulación de React.
-3. En Network, seleccionar la solicitud `lab/vulnerable`. Mostrar el método GET, el parámetro `mensaje`, el tipo `text/html; charset=utf-8` y la respuesta donde el contenido aparece como etiqueta `<script>`.
-4. Mostrar que no hay cabecera `Content-Security-Policy` en esta respuesta.
+1. Pulsar **Iniciar demostración guiada**. No hace falta escribir ni pegar un payload: el campo se completa solo con una prueba visual inofensiva.
+2. En la primera etapa, señalar el aviso amarillo **INYECCIÓN XSS EJECUTADA** que agrega el código al documento del iframe.
+3. En Network, seleccionar `lab/vulnerable`. Mostrar el GET, el parámetro `mensaje`, la respuesta con `<img ... onerror=...>` y la ausencia de `Content-Security-Policy`.
+4. La interfaz avanza por sí sola cada siete segundos. Si hace falta más tiempo para explicar, pulsar **Detener demostración**; el mensaje queda cargado y se puede continuar cambiando las pestañas manualmente.
 
 ### 2:15–4:00 · Mitigación CSP
 
-1. Cambiar a **Protección CSP**. El mismo mensaje se conserva y se solicita `/lab/csp`.
-2. Señalar en Network la cabecera `Content-Security-Policy` exacta: `default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'`.
-3. Volver a ejecutar el mismo mensaje. No aparece el diálogo; en Console se observa la violación de `script-src`.
-4. En Response, mostrar que el `<script>` sigue presente. Explicar que el navegador bloquea su ejecución, pero la salida todavía es vulnerable.
+1. En la segunda etapa automática, el fondo y el aviso ya no aparecen: CSP bloquea el manejador en línea.
+2. En Console, señalar el mensaje de violación CSP. En Network, seleccionar `/lab/csp` y mostrar la cabecera exacta: `default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'`.
+3. En Response, mostrar que la etiqueta `img` con `onerror` sigue presente. Explicar que el navegador bloquea su ejecución, pero la salida continúa vulnerable.
 
 ### 4:00–5:30 · Código seguro + CSP
 
-1. Cambiar a **Código seguro + CSP** y ejecutar la misma entrada.
-2. Mostrar la cabecera CSP conservada.
-3. En la respuesta o en el iframe, observar que `<script>alert('XSS')</script>` se presenta como texto literal y no hay alerta.
-4. Explicar que Express usa `escape-html` para el contexto de texto. La serialización de URL del frontend y el escape HTML del servidor resuelven problemas distintos.
+1. En la tercera etapa, la prueba se ve como texto literal dentro del iframe y no agrega el aviso ni crea un elemento `img`.
+2. Mostrar la cabecera CSP que se conserva y la respuesta HTML con los caracteres codificados como entidades.
+3. Explicar que Express usa `escape-html` para el contexto de texto. La serialización de URL del frontend y el escape HTML del servidor resuelven problemas distintos.
 
 ### 5:30–6:15 · Aislamiento y límites
 
-Mostrar que las tres pestañas usan `sandbox="allow-scripts allow-modals"`, sin `allow-same-origin`. El documento no comparte su origen con React. Aclarar que el ejemplo visual solo cambia el propio documento y que el laboratorio no lee cookies ni hace solicitudes externas.
+Mostrar que las tres pestañas usan `sandbox="allow-scripts allow-modals"`, sin `allow-same-origin`. El documento no comparte su origen con React. Aclarar que el aviso inyectado solo cambia el documento del iframe y que el laboratorio no lee cookies ni hace solicitudes externas.
 
 ### 6:15–7:00 · Cierre
 

@@ -45,7 +45,7 @@ La interfaz ofrece los mismos tres ejemplos en todas las pestañas:
 
 - Texto normal: `Hola, UTN.`
 - Prueba de diálogo: `<script>alert('XSS')</script>`.
-- Prueba visual: `<img src=x onerror="document.body.style.backgroundColor='#fff3b0'; document.body.dataset.xss='ejecutado'">`. El cambio se limita al documento aislado del iframe; no accede a cookies, almacenamiento, red ni ventana principal.
+- Prueba visual: una imagen rota ejecuta un manejador que cambia el fondo del iframe y agrega el aviso **INYECCIÓN XSS EJECUTADA**. El botón **Iniciar demostración guiada** carga este ejemplo y recorre automáticamente los tres escenarios; cada etapa dura siete segundos. El cambio queda dentro del documento aislado y no accede a cookies, almacenamiento, red externa ni ventana principal. Si necesitás más tiempo para explicar una etapa, detené la secuencia y cambiá de pestaña: el mismo mensaje queda cargado.
 
 React construye la URL desde una lista fija de endpoints locales y codifica `mensaje` con `URLSearchParams`. Express interpreta esa codificación de transporte; en el escenario seguro aplica además escape HTML para el contexto de salida. El documento que se ve es la respuesta HTML real de Express, cargada en un iframe con `sandbox="allow-scripts allow-modals"` en los tres escenarios y sin `allow-same-origin`.
 
@@ -75,7 +75,7 @@ Pruebas E2E en Chromium. Playwright inicia los dos servidores en los puertos aco
 npm run test:e2e
 ```
 
-La prueba vulnerable atiende el diálogo para evitar que Chromium quede bloqueado. La prueba CSP valida la cabecera HTTP y un error de consola que identifica una violación de `script-src`. La prueba segura verifica el texto visible, la ausencia de un nodo `script` creado desde el mensaje y la cabecera CSP.
+Las tres pruebas principales comprueban el diálogo vulnerable, la violación CSP real y el texto seguro. Una cuarta prueba recorre la demostración guiada completa y verifica que el aviso inyectado solo aparece en el escenario vulnerable.
 
 ## Estructura
 
@@ -85,7 +85,7 @@ backend/src/server.js       servidor local 127.0.0.1:3001
 frontend/src/               interfaz React y estilos
 frontend/vite.config.js     Vite en 127.0.0.1:5173 con puerto estricto
 tests/backend.test.js       pruebas HTTP del servidor
-tests/e2e/lab.spec.js       tres pruebas principales de Chromium
+tests/e2e/lab.spec.js       pruebas de escenarios y demo guiada en Chromium
 docs/informe-tecnico.md     informe académico
 docs/guia-exposicion.md     guion de exposición y DevTools
 docs/evidencias/            destino de capturas y registros auténticos
