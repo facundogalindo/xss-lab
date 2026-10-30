@@ -13,7 +13,6 @@ const SCENARIOS = {
     objective: 'Observar cómo una entrada reflejada sin codificación puede convertirse en HTML y ejecutar JavaScript.',
     protection: 'No hay una CSP restrictiva y el servidor inserta el mensaje directamente en el cuerpo HTML.',
     expected: 'El diálogo abre una alerta; la prueba visual agrega un aviso dentro del documento del laboratorio.',
-    csp: 'Este endpoint no envía una política CSP.',
   },
   csp: {
     label: '2. Protección CSP',
@@ -23,7 +22,6 @@ const SCENARIOS = {
     objective: 'Mantener la reflexión insegura y observar cómo la política bloquea scripts en línea.',
     protection: 'CSP aplicada por cabecera HTTP. La entrada continúa dentro del HTML como marcado.',
     expected: 'El navegador registra una violación CSP y bloquea el script o manejador en línea.',
-    csp: "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'",
   },
   secure: {
     label: '3. Código seguro + CSP',
@@ -33,7 +31,6 @@ const SCENARIOS = {
     objective: 'Mostrar el mismo mensaje como texto mediante codificación de salida y conservar CSP como defensa adicional.',
     protection: 'escape-html codifica caracteres especiales en contexto de texto; también se envía la misma CSP.',
     expected: 'El marcado de prueba se ve como texto y no crea nodos activos.',
-    csp: "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'",
   },
 };
 
@@ -158,19 +155,6 @@ export default function App() {
           <p className="frame-note">El documento se ejecuta aislado. La aplicación no lee su DOM ni interpreta el mensaje.</p>
         </section>
 
-        <aside className="inspection-panel" aria-label="Datos para inspección">
-          <div className="inspection-copy">
-            <p className="eyebrow">Inspección técnica</p>
-            <h2>Comprobá la respuesta en DevTools</h2>
-            <p>Abrí Network, seleccioná el documento <code>/lab/{scenario.endpoint}</code> y revisá Response Headers. En Console, buscá la violación CSP al probar el diálogo o la demo visual.</p>
-          </div>
-          <dl className="request-details">
-            <div><dt>URL solicitada</dt><dd><code>{frameUrl}</code></dd></div>
-            <div><dt>Método</dt><dd>GET</dd></div>
-            <div><dt>Parámetro</dt><dd><code>mensaje</code> (codificado en URL)</dd></div>
-            <div><dt>Content-Security-Policy</dt><dd><code>{scenario.csp}</code></dd></div>
-          </dl>
-        </aside>
       </section>
 
       <footer className="site-footer">

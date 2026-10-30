@@ -43,6 +43,8 @@ npm.cmd run dev
 
 El botón **Poner payload XSS en mensaje** carga el mismo texto de prueba visual en el campo, desde cualquiera de las pestañas. Después pulsá **Ejecutar prueba**. Al cambiar de escenario, el mensaje se conserva y se solicita el endpoint correspondiente. En el vulnerable, el manejador modifica el DOM del iframe y muestra una pantalla roja **PÁGINA ALTERADA**; CSP lo bloquea y el código seguro lo presenta como texto. No accede a cookies ni almacenamiento y no se conecta a servicios externos.
 
+Los pasos para revisar URL, método, parámetro, respuesta y cabeceras en DevTools están en [la guía de exposición](docs/guia-exposicion.md#inspección-de-solicitudes-en-devtools).
+
 React construye la URL desde una lista fija de endpoints locales y codifica `mensaje` con `URLSearchParams`. Express interpreta esa codificación de transporte; en el escenario seguro aplica además escape HTML para el contexto de salida. El documento que se ve es la respuesta HTML real de Express, cargada en un iframe con `sandbox="allow-scripts allow-modals"` en los tres escenarios y sin `allow-same-origin`.
 
 ## Pruebas

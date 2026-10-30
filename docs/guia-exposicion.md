@@ -11,6 +11,19 @@
 4. Abrir DevTools (F12), activar **Network**, marcar **Preserve log** y tener visible **Console**.
 5. Confirmar que la demostración usa `127.0.0.1`; no exponer los puertos a una red.
 
+## Inspección de solicitudes en DevTools
+
+En **Network**, seleccioná la solicitud `lab/vulnerable`, `lab/csp` o `lab/secure` generada por el iframe. En **Headers** se puede mostrar:
+
+- **Request URL:** `http://127.0.0.1:3001/lab/<escenario>?mensaje=...`
+- **Request Method:** `GET`.
+- **Query String Parameters:** `mensaje`, codificado para la URL.
+- **Content-Type:** `text/html; charset=utf-8`.
+- **Cache-Control:** `no-store`.
+- **Content-Security-Policy:** ausente en `vulnerable`; en `csp` y `secure` es `default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'`.
+
+En **Response** se compara el cuerpo del documento. `vulnerable` y `csp` conservan el marcado de entrada; en `secure` los caracteres HTML aparecen como entidades. En **Console**, la política CSP informa el bloqueo del manejador o script en línea. El detalle queda en esta guía para mantener compacta la interfaz.
+
 ## Secuencia sugerida
 
 ### 0:00–0:45 · Contexto
