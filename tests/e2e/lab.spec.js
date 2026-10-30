@@ -77,10 +77,20 @@ test('seguro: el payload aparece como texto, sin nodo script ni ejecución, y co
   expect(dialogSeen).toBe(false);
 });
 
-test('la demostración guiada inyecta un aviso y recorre CSP y código seguro con el mismo mensaje', async ({ page }) => {
+test('el botón carga el mismo payload desde cualquier escenario y se conserva al cambiar de pestaña', async ({ page }) => {
   await page.goto('/');
   const messageInput = page.getByLabel('Mensaje de prueba');
   const frame = page.frameLocator('[data-testid="lab-frame"]');
+  const loadPayload = page.getByRole('button', { name: 'Poner payload XSS en mensaje' });
+
+  await loadPayload.click();
+  await expect(messageInput).toHaveValue(VISUAL_XSS);
+
+  const vulnerableResponsePromise = responseForScenario(page, 'vulnerable');
+  await page.getByRole('button', { name: 'Ejecutar prueba' }).click();
+  expect((await vulnerableResponsePromise).status()).toBe(200);
+  await expect(frame.locator('#xss-proof h1')).toHaveText('PÁGINA ALTERADA', { timeout: 12_000 });
+
   const cspViolation = page.waitForEvent('console', {
     predicate: (entry) => entry.type() === 'error'
       && /content security policy/i.test(entry.text())
@@ -88,18 +98,24 @@ test('la demostración guiada inyecta un aviso y recorre CSP y código seguro co
     timeout: 18_000,
   });
 
-  await page.getByTestId('guided-demo-button').click();
-  await expect(messageInput).toHaveValue(VISUAL_XSS);
-  await expect(frame.locator('#xss-proof h1')).toHaveText('PÁGINA ALTERADA', { timeout: 12_000 });
-  await expect(frame.locator('#xss-proof pre')).toHaveText('onerror → JavaScript → DOM modificado');
-
   const cspTab = page.getByRole('tab', { name: 'Protección CSP' });
-  await expect(cspTab).toHaveAttribute('aria-selected', 'true', { timeout: 12_000 });
+  const cspResponsePromise = responseForScenario(page, 'csp');
+  await cspTab.click();
+  await expect(cspTab).toHaveAttribute('aria-selected', 'true');
+  const cspResponse = await cspResponsePromise;
+  expect((await cspResponse.allHeaders())['content-security-policy']).toBe(CSP);
+  await expect(messageInput).toHaveValue(VISUAL_XSS);
   await cspViolation;
   await expect(frame.locator('#xss-proof')).toHaveCount(0);
 
+  await loadPayload.click();
+  await expect(messageInput).toHaveValue(VISUAL_XSS);
+
   const secureTab = page.getByRole('tab', { name: 'Código seguro + CSP' });
-  await expect(secureTab).toHaveAttribute('aria-selected', 'true', { timeout: 12_000 });
+  const secureResponsePromise = responseForScenario(page, 'secure');
+  await secureTab.click();
+  await expect(secureTab).toHaveAttribute('aria-selected', 'true');
+  expect((await secureResponsePromise).status()).toBe(200);
   await expect(frame.locator('#message')).toHaveText(VISUAL_XSS);
   await expect(frame.locator('#message img')).toHaveCount(0);
 });

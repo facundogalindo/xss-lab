@@ -41,11 +41,7 @@ npm.cmd run dev
 2. **Protección CSP** (`GET /lab/csp?mensaje=...`): conserva la misma reflexión insegura. La cabecera aplicada por el servidor es `default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'`. El navegador bloquea el script en línea, pero el HTML malicioso sigue presente; CSP mitiga este caso y no corrige la salida vulnerable.
 3. **Código seguro + CSP** (`GET /lab/secure?mensaje=...`): codifica el mensaje para contexto de texto con `escape-html` y conserva la misma CSP como defensa adicional. El marcado se muestra como texto y no crea un elemento ejecutable.
 
-La interfaz ofrece los mismos tres ejemplos en todas las pestañas:
-
-- Texto normal: `Hola, UTN.`
-- Prueba de diálogo: `<script>alert('XSS')</script>`.
-- Prueba visual: una imagen rota ejecuta un manejador que reemplaza el contenido del iframe por una pantalla roja **PÁGINA ALTERADA** y muestra cómo el código modificó el DOM. El botón **Iniciar demostración guiada** carga este ejemplo y recorre automáticamente los tres escenarios; cada etapa dura siete segundos. El cambio queda dentro del documento aislado y no accede a cookies, almacenamiento, red externa ni ventana principal. Si necesitás más tiempo para explicar una etapa, detené la secuencia y cambiá de pestaña: el mismo mensaje queda cargado.
+El botón **Poner payload XSS en mensaje** carga el mismo texto de prueba visual en el campo, desde cualquiera de las pestañas. Después pulsá **Ejecutar prueba**. Al cambiar de escenario, el mensaje se conserva y se solicita el endpoint correspondiente. En el vulnerable, el manejador modifica el DOM del iframe y muestra una pantalla roja **PÁGINA ALTERADA**; CSP lo bloquea y el código seguro lo presenta como texto. No accede a cookies ni almacenamiento y no se conecta a servicios externos.
 
 React construye la URL desde una lista fija de endpoints locales y codifica `mensaje` con `URLSearchParams`. Express interpreta esa codificación de transporte; en el escenario seguro aplica además escape HTML para el contexto de salida. El documento que se ve es la respuesta HTML real de Express, cargada en un iframe con `sandbox="allow-scripts allow-modals"` en los tres escenarios y sin `allow-same-origin`.
 
@@ -75,7 +71,7 @@ Pruebas E2E en Chromium. Playwright inicia los dos servidores en los puertos aco
 npm run test:e2e
 ```
 
-Las tres pruebas principales comprueban el diálogo vulnerable, la violación CSP real y el texto seguro. Una cuarta prueba recorre la demostración guiada completa y verifica que el aviso inyectado solo aparece en el escenario vulnerable.
+Las tres pruebas principales comprueban el diálogo vulnerable, la violación CSP real y el texto seguro. Una cuarta prueba verifica que el botón carga el payload desde distintos escenarios y que el texto se conserva al cambiar de pestaña.
 
 ## Estructura
 
@@ -85,7 +81,7 @@ backend/src/server.js       servidor local 127.0.0.1:3001
 frontend/src/               interfaz React y estilos
 frontend/vite.config.js     Vite en 127.0.0.1:5173 con puerto estricto
 tests/backend.test.js       pruebas HTTP del servidor
-tests/e2e/lab.spec.js       pruebas de escenarios y demo guiada en Chromium
+tests/e2e/lab.spec.js       pruebas de escenarios y carga del payload en Chromium
 docs/informe-tecnico.md     informe académico
 docs/guia-exposicion.md     guion de exposición y DevTools
 docs/evidencias/            destino de capturas y registros auténticos
@@ -95,7 +91,7 @@ docs/evidencias/            destino de capturas y registros auténticos
 
 - **Puerto ocupado:** cerrá el proceso que usa `3001` o `5173` y volvé a ejecutar. La aplicación no busca otro puerto.
 - **Playwright no encuentra Chromium:** ejecutá `npx playwright install chromium`. Si el sistema no tiene dependencias del navegador, consultá la guía de instalación de Playwright para tu plataforma.
-- **Diálogo abierto durante una prueba manual:** aceptalo o cerralo desde el navegador. En E2E, el listener lo acepta automáticamente.
+- **Diálogo abierto durante una prueba manual:** aceptalo o cerralo desde el navegador. El ejemplo de diálogo también se usa en la prueba E2E.
 - **PowerShell bloquea `npm`:** ejecutá `npm.cmd` como se muestra arriba.
 - **No se ve la alerta en CSP:** verificá que estás en la pestaña CSP, abrí DevTools → Network, seleccioná la solicitud `/lab/csp` y comprobá la cabecera `Content-Security-Policy`; revisá Console para el bloqueo de `script-src`.
 

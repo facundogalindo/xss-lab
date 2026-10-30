@@ -44,8 +44,6 @@ h1 { margin-bottom: 5px; font-size: clamp(25px, 4vw, 34px); line-height: 1.15; l
 .scenario-panel.csp { box-shadow: inset 3px 0 #d2a340; }
 .scenario-panel.secure { box-shadow: inset 3px 0 #35916b; }
 .scenario-heading, .response-title { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
-.scenario-status { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
-.demo-progress { padding: 6px 9px; border: 1px solid #d5e3eb; border-radius: 999px; background: #eef5f8; color: #34566b; font-size: 10px; font-weight: 700; }
 .scenario-heading h2, .response-title h2, .inspection-copy h2 { margin: 0; font-size: 19px; letter-spacing: -.025em; }
 .status-pill { padding: 6px 10px; border-radius: 999px; background: #fae8e8; color: #934044; font-size: 11px; font-weight: 700; }
 .status-pill.csp { background: #fbf0d8; color: #805818; }
@@ -57,19 +55,13 @@ h1 { margin-bottom: 5px; font-size: clamp(25px, 4vw, 34px); line-height: 1.15; l
 .input-section > label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 700; }
 textarea { display: block; width: 100%; min-height: 82px; resize: vertical; padding: 12px 14px; border: 1px solid #d8e0e6; border-radius: 10px; outline: none; color: #1e2c38; background: #fff; font-family: 'Cascadia Code', Consolas, monospace; font-size: 12px; line-height: 1.55; }
 textarea:focus { border-color: #4d85aa; box-shadow: 0 0 0 3px #4d85aa20; }
-.examples-row, .actions-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.examples-row { margin-top: 12px; }
-.examples-label { margin-right: 2px; color: #788590; font-size: 11px; font-weight: 600; }
-.example-button { padding: 6px 9px; border: 1px solid #e0e6eb; border-radius: 7px; background: #fff; color: #546472; font-size: 11px; }
-.example-button:hover { border-color: #b8c8d4; background: #f8fafb; }
+.actions-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .actions-row { margin-top: 18px; }
 .primary-button, .secondary-button { min-height: 38px; padding: 0 15px; border-radius: 8px; font-size: 12px; font-weight: 700; }
 .primary-button { border: 1px solid #173e59; background: #173e59; color: #fff; box-shadow: 0 3px 8px #173e5924; }
 .primary-button:hover { background: #0e3049; }
 .secondary-button { border: 1px solid #dce3e8; background: #fff; color: #536371; }
 .secondary-button:hover { background: #f6f8f9; }
-.demo-button { min-height: 38px; padding: 0 13px; border: 1px solid #d9e5eb; border-radius: 8px; background: #f2f7f9; color: #31566d; font-size: 12px; font-weight: 700; }
-.demo-button:hover { border-color: #b9cdd8; background: #eaf2f6; }
 .action-hint { margin-left: 4px; color: #88939c; font-size: 11px; }
 .response-section { padding: 23px 28px 20px; border-bottom: 1px solid #edf0f2; }
 .response-title { margin-bottom: 14px; }

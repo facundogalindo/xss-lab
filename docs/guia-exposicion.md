@@ -17,24 +17,24 @@
 
 Presentar el objetivo: un parámetro GET vuelve dentro de HTML y comparar una respuesta vulnerable, la mitigación CSP y la salida codificada. Aclarar que la vulnerabilidad de las dos primeras pestañas es intencional y local.
 
-### 0:45–2:15 · Iniciar la demostración automática
+### 0:45–2:15 · Escenario vulnerable
 
-1. Pulsar **Iniciar demostración guiada**. No hace falta escribir ni pegar un payload: el campo se completa solo con una prueba visual inofensiva.
-2. En la primera etapa, señalar la pantalla roja **PÁGINA ALTERADA** que el payload genera dentro del iframe. El panel explica que el código cambió el DOM.
+1. En **Vulnerable**, pulsar **Poner payload XSS en mensaje**. El código aparece en el campo sin tener que copiarlo o escribirlo. El botón solo carga el texto; no lo ejecuta.
+2. Pulsar **Ejecutar prueba**. El iframe muestra la pantalla roja **PÁGINA ALTERADA**; el payload reemplazó el DOM de ese documento.
 3. En Network, seleccionar `lab/vulnerable`. Mostrar el GET, el parámetro `mensaje`, la respuesta con `<img ... onerror=...>` y la ausencia de `Content-Security-Policy`.
-4. La interfaz avanza por sí sola cada siete segundos. Si hace falta más tiempo para explicar, pulsar **Detener demostración**; el mensaje queda cargado y se puede continuar cambiando las pestañas manualmente.
+4. En Console o en el campo de mensaje, señalar el código que se ejecutó. La pantalla únicamente afirma que se modificó el iframe de demostración.
 
 ### 2:15–4:00 · Mitigación CSP
 
-1. En la segunda etapa automática, la pantalla roja ya no aparece: CSP bloquea el manejador en línea.
-2. En Console, señalar el mensaje de violación CSP. En Network, seleccionar `/lab/csp` y mostrar la cabecera exacta: `default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'`.
+1. Cambiar a **Protección CSP**. El mismo mensaje se conserva automáticamente. Pulsar **Poner payload XSS en mensaje** y luego **Ejecutar prueba** para repetir el envío en este escenario.
+2. La pantalla roja no aparece. En Console, señalar la violación CSP; en Network, seleccionar `/lab/csp` y mostrar la cabecera exacta: `default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'`.
 3. En Response, mostrar que la etiqueta `img` con `onerror` sigue presente. Explicar que el navegador bloquea su ejecución, pero la salida continúa vulnerable.
 
 ### 4:00–5:30 · Código seguro + CSP
 
-1. En la tercera etapa, el payload se ve como texto literal dentro del iframe y no reemplaza el documento ni crea un elemento `img`.
-2. Mostrar la cabecera CSP que se conserva y la respuesta HTML con los caracteres codificados como entidades.
-3. Explicar que Express usa `escape-html` para el contexto de texto. La serialización de URL del frontend y el escape HTML del servidor resuelven problemas distintos.
+1. Cambiar a **Código seguro + CSP**. El mensaje se conserva. Pulsar el botón de carga y ejecutar la prueba.
+2. El payload se ve como texto literal dentro del iframe y no reemplaza el documento ni crea un elemento `img`.
+3. Mostrar la cabecera CSP que se conserva y la respuesta HTML con los caracteres codificados como entidades. Explicar que Express usa `escape-html` para el contexto de texto. La serialización de URL del frontend y el escape HTML del servidor resuelven problemas distintos.
 
 ### 5:30–6:15 · Aislamiento y límites
 

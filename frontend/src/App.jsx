@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const API_BASE = 'http://127.0.0.1:3001';
-const DEMO_SCENARIOS = ['vulnerable', 'csp', 'secure'];
-const DEMO_STEP_MS = 7000;
+const DEFAULT_MESSAGE = 'Hola, UTN.';
 const VISUAL_XSS = `<img src=x onerror="document.body.style.cssText='margin:0;background:#170b0d;color:#fff;font-family:Arial,sans-serif';const panel=document.createElement('main');panel.id='xss-proof';panel.style.cssText='min-height:100vh;display:grid;align-content:center;gap:18px;padding:28px;background:radial-gradient(circle at top,#5b1820,#170b0d 70%)';const badge=document.createElement('p');badge.textContent='⚠ PRUEBA XSS · SOLO EN ESTE IFRAME';badge.style.cssText='margin:0;color:#ffb4ae;font-weight:bold;letter-spacing:.12em';const title=document.createElement('h1');title.textContent='PÁGINA ALTERADA';title.style.cssText='margin:0;color:#fff;font-size:clamp(30px,8vw,64px);line-height:1';const detail=document.createElement('p');detail.textContent='Un payload reflejado ejecutó JavaScript y modificó este documento.';detail.style.cssText='max-width:32rem;margin:0;color:#ffe4e1;font-size:18px;line-height:1.5';const proof=document.createElement('pre');proof.textContent='onerror → JavaScript → DOM modificado';proof.style.cssText='margin:0;padding:12px;border:1px solid #ff716d;border-radius:8px;color:#ffc7c1;white-space:pre-wrap';const note=document.createElement('p');note.textContent='No se accedió a datos ni se hicieron conexiones externas.';note.style.cssText='margin:0;color:#e8bdc0;font-size:13px';panel.append(badge,title,detail,proof,note);document.body.replaceChildren(panel);this.remove()">`;
 
 const SCENARIOS = {
@@ -38,12 +37,6 @@ const SCENARIOS = {
   },
 };
 
-const EXAMPLES = [
-  { label: 'Texto normal', value: 'Hola, UTN.' },
-  { label: 'Prueba de diálogo', value: "<script>alert('XSS')</script>" },
-  { label: 'Prueba visual', value: VISUAL_XSS },
-];
-
 function buildFrameUrl(endpoint, message) {
   const query = new URLSearchParams();
   query.set('mensaje', message);
@@ -52,63 +45,23 @@ function buildFrameUrl(endpoint, message) {
 
 export default function App() {
   const [activeScenario, setActiveScenario] = useState('vulnerable');
-  const [message, setMessage] = useState(EXAMPLES[0].value);
+  const [message, setMessage] = useState(DEFAULT_MESSAGE);
   const [runNumber, setRunNumber] = useState(0);
-  const [demoStep, setDemoStep] = useState(null);
   const scenario = SCENARIOS[activeScenario];
   const frameUrl = buildFrameUrl(scenario.endpoint, message);
 
-  useEffect(() => {
-    if (demoStep === null) return undefined;
-
-    const timer = window.setTimeout(() => {
-      const nextStep = demoStep + 1;
-      if (nextStep >= DEMO_SCENARIOS.length) {
-        setDemoStep(null);
-        return;
-      }
-
-      setDemoStep(nextStep);
-      setActiveScenario(DEMO_SCENARIOS[nextStep]);
-      setRunNumber((current) => current + 1);
-    }, DEMO_STEP_MS);
-
-    return () => window.clearTimeout(timer);
-  }, [demoStep]);
-
   function runTest(event) {
     event.preventDefault();
-    setDemoStep(null);
     setRunNumber((current) => current + 1);
   }
 
   function selectScenario(id) {
-    setDemoStep(null);
     setActiveScenario(id);
     setRunNumber((current) => current + 1);
   }
 
-  function selectExample(value) {
-    setDemoStep(null);
-    setMessage(value);
-  }
-
-  function restoreExample() {
-    setDemoStep(null);
-    setMessage(EXAMPLES[0].value);
-    setRunNumber((current) => current + 1);
-  }
-
-  function toggleGuidedDemo() {
-    if (demoStep !== null) {
-      setDemoStep(null);
-      return;
-    }
-
-    setMessage(EXAMPLES[2].value);
-    setActiveScenario(DEMO_SCENARIOS[0]);
-    setRunNumber((current) => current + 1);
-    setDemoStep(0);
+  function loadXssPayload() {
+    setMessage(VISUAL_XSS);
   }
 
   return (
@@ -152,10 +105,7 @@ export default function App() {
               <p className="eyebrow">Escenario actual</p>
               <h2>{scenario.shortLabel}</h2>
             </div>
-            <div className="scenario-status">
-              {demoStep !== null && <span className="demo-progress" aria-live="polite">Demo guiada · {demoStep + 1} de 3</span>}
-              <span className={`status-pill ${scenario.className}`}>{activeScenario === 'vulnerable' ? 'Sin defensa' : activeScenario === 'csp' ? 'CSP aplicada' : 'Escape + CSP'}</span>
-            </div>
+            <span className={`status-pill ${scenario.className}`}>{activeScenario === 'vulnerable' ? 'Sin defensa' : activeScenario === 'csp' ? 'CSP aplicada' : 'Escape + CSP'}</span>
           </div>
           <div className="explanation-grid">
             <article>
@@ -183,23 +133,10 @@ export default function App() {
             onChange={(event) => setMessage(event.target.value)}
             spellCheck="false"
           />
-          <div className="examples-row">
-            <span className="examples-label">Ejemplos</span>
-            {EXAMPLES.map((example) => (
-              <button className="example-button" type="button" key={example.label} onClick={() => selectExample(example.value)}>
-                {example.label}
-              </button>
-            ))}
-          </div>
           <div className="actions-row">
             <button className="primary-button" type="submit">Ejecutar prueba</button>
-            <button className="secondary-button" type="button" onClick={restoreExample}>Restaurar ejemplo</button>
-            <button className="demo-button" type="button" data-testid="guided-demo-button" onClick={toggleGuidedDemo}>
-              {demoStep === null ? 'Iniciar demostración guiada' : 'Detener demostración'}
-            </button>
-            <span className="action-hint">
-              {demoStep === null ? 'La demo recorre los tres escenarios con la misma prueba visual.' : 'La pantalla cambia cada 7 segundos; podés detenerla cuando quieras.'}
-            </span>
+            <button className="secondary-button" type="button" onClick={loadXssPayload}>Poner payload XSS en mensaje</button>
+            <span className="action-hint">Carga el mismo texto en cualquier escenario; luego ejecutá la prueba.</span>
           </div>
         </form>
 
