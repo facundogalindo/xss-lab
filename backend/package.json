@@ -1,0 +1,14 @@
+{
+  "name": "@tpi-sds/backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "escape-html": "^1.0.3",
+    "express": "^5.1.0"
+  }
+}
