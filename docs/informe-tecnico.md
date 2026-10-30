@@ -35,7 +35,7 @@ Express no inicia el puerto al importar `app.js`, de modo que las pruebas pueden
 
 En la pestaña **Vulnerable**, se selecciona la prueba de diálogo y se ejecuta. El frontend envía el texto como el parámetro URL `mensaje`; el servidor lo inserta sin codificación en el nodo de texto fijo del documento. Como el navegador interpreta la respuesta como HTML, la etiqueta `script` puede ejecutarse dentro del iframe. El sandbox permite scripts y diálogos para que la observación sea real, pero no otorga origen compartido, formularios, ventanas emergentes ni navegación del documento superior.
 
-El ejemplo visual usa un manejador `onerror` sobre una imagen inválida, cambia el fondo y agrega el aviso **INYECCIÓN XSS EJECUTADA** al documento aislado. La interfaz puede recorrer automáticamente los tres endpoints con el mismo payload visual, manteniendo cada etapa visible durante siete segundos. Los payloads no leen cookies ni almacenamiento y no realizan conexiones de red externa.
+El ejemplo visual usa un manejador `onerror` sobre una imagen inválida y reemplaza el contenido del documento aislado por una pantalla roja **PÁGINA ALTERADA**, junto con una explicación del cambio en el DOM. La interfaz puede recorrer automáticamente los tres endpoints con el mismo payload visual, manteniendo cada etapa visible durante siete segundos. Los payloads no leen cookies ni almacenamiento y no realizan conexiones de red externa.
 
 ## 4. Defensa mediante CSP
 
@@ -67,7 +67,7 @@ Los tres escenarios reciben el mismo parámetro y utilizan el mismo sandbox. El 
 
 Las pruebas de backend usan Node.js Test Runner y verifican el tipo de contenido, la reflexión en los escenarios 1 y 2, la política CSP por endpoint, el escape de caracteres especiales, parámetros ausentes y repetidos, y el límite de entrada. Las pruebas de Playwright en Chromium verifican una ejecución real mediante diálogo, una violación CSP observable y la presentación literal del payload en el escenario seguro.
 
-**Verificación ejecutada el 30 de octubre de 2026:** las cinco pruebas HTTP de Node.js Test Runner pasaron; las cuatro pruebas E2E pasaron en Chromium. Las pruebas cubren el diálogo real vulnerable, la violación CSP observable, la salida codificada y la secuencia automática que agrega un aviso solo en el primer escenario. El build de producción de Vite también terminó correctamente. No se incluyen capturas ni registros de ejecución como evidencia adjunta. Los comandos reproducibles están en el README (`npm run test:backend`, `npx playwright install chromium`, `npm run test:e2e`).
+**Verificación ejecutada el 30 de octubre de 2026:** las cinco pruebas HTTP de Node.js Test Runner pasaron; las cuatro pruebas E2E pasaron en Chromium. Las pruebas cubren el diálogo real vulnerable, la violación CSP observable, la salida codificada y la secuencia automática que reemplaza el documento por una alerta visual únicamente en el primer escenario. El build de producción de Vite también terminó correctamente. No se incluyen capturas ni registros de ejecución como evidencia adjunta. Los comandos reproducibles están en el README (`npm run test:backend`, `npx playwright install chromium`, `npm run test:e2e`).
 
 ## 8. Conclusiones
 

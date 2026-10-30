@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 const API_BASE = 'http://127.0.0.1:3001';
 const DEMO_SCENARIOS = ['vulnerable', 'csp', 'secure'];
 const DEMO_STEP_MS = 7000;
+const VISUAL_XSS = `<img src=x onerror="document.body.style.cssText='margin:0;background:#170b0d;color:#fff;font-family:Arial,sans-serif';const panel=document.createElement('main');panel.id='xss-proof';panel.style.cssText='min-height:100vh;display:grid;align-content:center;gap:18px;padding:28px;background:radial-gradient(circle at top,#5b1820,#170b0d 70%)';const badge=document.createElement('p');badge.textContent='⚠ PRUEBA XSS · SOLO EN ESTE IFRAME';badge.style.cssText='margin:0;color:#ffb4ae;font-weight:bold;letter-spacing:.12em';const title=document.createElement('h1');title.textContent='PÁGINA ALTERADA';title.style.cssText='margin:0;color:#fff;font-size:clamp(30px,8vw,64px);line-height:1';const detail=document.createElement('p');detail.textContent='Un payload reflejado ejecutó JavaScript y modificó este documento.';detail.style.cssText='max-width:32rem;margin:0;color:#ffe4e1;font-size:18px;line-height:1.5';const proof=document.createElement('pre');proof.textContent='onerror → JavaScript → DOM modificado';proof.style.cssText='margin:0;padding:12px;border:1px solid #ff716d;border-radius:8px;color:#ffc7c1;white-space:pre-wrap';const note=document.createElement('p');note.textContent='No se accedió a datos ni se hicieron conexiones externas.';note.style.cssText='margin:0;color:#e8bdc0;font-size:13px';panel.append(badge,title,detail,proof,note);document.body.replaceChildren(panel);this.remove()">`;
 
 const SCENARIOS = {
   vulnerable: {
@@ -40,10 +41,7 @@ const SCENARIOS = {
 const EXAMPLES = [
   { label: 'Texto normal', value: 'Hola, UTN.' },
   { label: 'Prueba de diálogo', value: "<script>alert('XSS')</script>" },
-  {
-    label: 'Prueba visual',
-    value: `<img src=x onerror="document.body.style.backgroundColor='#fff3b0'; const aviso=document.createElement('p'); aviso.id='xss-proof'; aviso.textContent='INYECCIÓN XSS EJECUTADA'; aviso.style.cssText='padding:12px;color:#7a3d00;font-size:20px;font-weight:bold'; document.body.append(aviso); this.remove()">`,
-  },
+  { label: 'Prueba visual', value: VISUAL_XSS },
 ];
 
 function buildFrameUrl(endpoint, message) {

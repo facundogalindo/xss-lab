@@ -45,7 +45,7 @@ La interfaz ofrece los mismos tres ejemplos en todas las pestañas:
 
 - Texto normal: `Hola, UTN.`
 - Prueba de diálogo: `<script>alert('XSS')</script>`.
-- Prueba visual: una imagen rota ejecuta un manejador que cambia el fondo del iframe y agrega el aviso **INYECCIÓN XSS EJECUTADA**. El botón **Iniciar demostración guiada** carga este ejemplo y recorre automáticamente los tres escenarios; cada etapa dura siete segundos. El cambio queda dentro del documento aislado y no accede a cookies, almacenamiento, red externa ni ventana principal. Si necesitás más tiempo para explicar una etapa, detené la secuencia y cambiá de pestaña: el mismo mensaje queda cargado.
+- Prueba visual: una imagen rota ejecuta un manejador que reemplaza el contenido del iframe por una pantalla roja **PÁGINA ALTERADA** y muestra cómo el código modificó el DOM. El botón **Iniciar demostración guiada** carga este ejemplo y recorre automáticamente los tres escenarios; cada etapa dura siete segundos. El cambio queda dentro del documento aislado y no accede a cookies, almacenamiento, red externa ni ventana principal. Si necesitás más tiempo para explicar una etapa, detené la secuencia y cambiá de pestaña: el mismo mensaje queda cargado.
 
 React construye la URL desde una lista fija de endpoints locales y codifica `mensaje` con `URLSearchParams`. Express interpreta esa codificación de transporte; en el escenario seguro aplica además escape HTML para el contexto de salida. El documento que se ve es la respuesta HTML real de Express, cargada en un iframe con `sandbox="allow-scripts allow-modals"` en los tres escenarios y sin `allow-same-origin`.
 
